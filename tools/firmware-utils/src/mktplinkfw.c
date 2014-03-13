@@ -64,6 +64,7 @@
 #define HWID_TL_WR1043ND_V2	0x10430002
 #define HWID_TL_WR1041N_V2	0x10410002
 #define HWID_TL_WR2543N_V1	0x25430001
+#define HWID_RAINMACHINE	0x93310001
 
 #define MD5SUM_LEN	16
 
@@ -193,6 +194,13 @@ static struct flash_layout layouts[] = {
 		.kernel_ep	= 0xc0000000,
 		.rootfs_ofs	= 0x2a0000,
 	}, {
+		.id        = "16Mlzma",
+		.fw_max_len = 0xfc0000,
+		.kernel_la    = 0x80060000,
+		.kernel_ep    = 0x80060000,
+		.rootfs_ofs    = 0x100000,
+	},
+	{
 		/* terminating entry */
 	}
 };
@@ -369,6 +377,11 @@ static struct board_info boards[] = {
 		.hw_rev		= 1,
 		.layout_id	= "4Mlzma",
 	}, {
+                .id             = "RAINMACHINE",
+                .hw_id          = HWID_RAINMACHINE,
+                .hw_rev         = 1,
+                .layout_id      = "16Mlzma",
+        }, {
 		/* terminating entry */
 	}
 };

@@ -1,0 +1,42 @@
+diff --git a/arch/mips/ath79/Kconfig b/arch/mips/ath79/Kconfig
+index c419bce..5bdf2de 100644
+--- a/arch/mips/ath79/Kconfig
++++ b/arch/mips/ath79/Kconfig
+@@ -2,6 +2,15 @@ if ATH79
+ 
+ menu "Atheros AR71XX/AR724X/AR913X machine selection"
+ 
++config ATH79_MACH_RAINMACHINE
++	bool "RainMachine v2 support"
++	select SOC_AR933X
++	select ATH79_DEV_ETH
++	select ATH79_DEV_GPIO_BUTTONS
++	select ATH79_DEV_LEDS_GPIO
++	select ATH79_DEV_M25P80
++	select ATH79_DEV_WMAC
++
+ config ATH79_MACH_ALFA_AP96
+ 	bool "ALFA Network AP96 board support"
+ 	select SOC_AR71XX
+diff --git a/arch/mips/ath79/Makefile b/arch/mips/ath79/Makefile
+index a5ecaf3..3034050 100644
+--- a/arch/mips/ath79/Makefile
++++ b/arch/mips/ath79/Makefile
+@@ -127,3 +127,4 @@ obj-$(CONFIG_ATH79_MACH_WZR_HP_AG300H)	+= mach-wzr-hp-ag300h.o
+ obj-$(CONFIG_ATH79_MACH_WZR_HP_G450H)	+= mach-wzr-hp-g450h.o
+ obj-$(CONFIG_ATH79_MACH_ZCN_1523H)	+= mach-zcn-1523h.o
+ obj-$(CONFIG_ATH79_MACH_CARAMBOLA2)	+= mach-carambola2.o
++obj-$(CONFIG_ATH79_MACH_RAINMACHINE)	+= mach-rainmachine.o
+\ No newline at end of file
+diff --git a/arch/mips/ath79/machtypes.h b/arch/mips/ath79/machtypes.h
+index 09b636b..d9bcd40 100644
+--- a/arch/mips/ath79/machtypes.h
++++ b/arch/mips/ath79/machtypes.h
+@@ -156,6 +156,7 @@ enum ath79_mach_type {
+ 	ATH79_MACH_WZR_HP_G450H,	/* Buffalo WZR-HP-G450H */
+ 	ATH79_MACH_ZCN_1523H_2,		/* Zcomax ZCN-1523H-2-xx */
+ 	ATH79_MACH_ZCN_1523H_5,		/* Zcomax ZCN-1523H-5-xx */
++	ATH79_MACH_RAINMACHINE,         /* RAINMACHINE Sprinker  */
+ };
+ 
+ #endif /* _ATH79_MACHTYPE_H */

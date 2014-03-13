@@ -189,6 +189,9 @@ tplink_board_detect() {
 	"453000"*)
 		model="MERCURY MW4530R"
 		;;
+	"933100"*)
+                model="RainMachine"
+                ;;
 	*)
 		hwver=""
 		;;
@@ -639,10 +642,13 @@ ar71xx_board_detect() {
 	*"BHU BXU2000n-2 rev. A1")
 		name="bxu2000n-2-a1"
 		;;
+	*"RainMachine")
+                name="rainmachine-sprinkler"
+                ;;
 	esac
 
 	case "$machine" in
-	*TL-WR* | *TL-WA* | *TL-MR* | *TL-WD*)
+	*TL-WR* | *TL-WA* | *TL-MR* | *TL-WD* | *RainMachine*)
 		tplink_board_detect "$machine"
 		;;
 	esac

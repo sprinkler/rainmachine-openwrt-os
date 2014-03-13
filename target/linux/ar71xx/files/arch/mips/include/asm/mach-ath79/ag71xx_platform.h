@@ -62,4 +62,6 @@ struct ag71xx_mdio_platform_data {
 	void		(*reset)(struct mii_bus *bus);
 };
 
+#define AR933X_GPIO_MASK        0x3fffffff
+
 #endif /* __ASM_MACH_ATH79_PLATFORM_H */

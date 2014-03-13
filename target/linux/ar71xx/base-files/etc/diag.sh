@@ -220,6 +220,9 @@ get_status_led() {
 	wlr8100)
 		status_led="sitecom:amber:status"
 		;;
+	rainmachine)
+                status_led="tp-link:green:wps"
+                ;;
 	esac
 }
 
