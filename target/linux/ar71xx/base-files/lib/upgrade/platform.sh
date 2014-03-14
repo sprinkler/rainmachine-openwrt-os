@@ -254,7 +254,7 @@ platform_check_image() {
 	tl-wr1043nd | \
 	tl-wr1043nd-v2 | \
 	tl-wr2543n | \
-	rainmachine-sprinkler)
+	rainmachine)
 		[ "$magic" != "0100" ] && {
 			echo "Invalid image type."
 			return 1
