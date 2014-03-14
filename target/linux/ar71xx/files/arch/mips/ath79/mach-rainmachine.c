@@ -175,5 +175,5 @@ static void __init rainmachine_setup(void)
 	ath79_register_wmac(ee, mac);
 }
 
-MIPS_MACHINE(ATH79_MACH_TN_WL9331V1, "TN-WL9331V1",
-	     "TN-ROUTER TN-WL9331V1", rainmachine_setup);
+MIPS_MACHINE(ATH79_MACH_RAINMACHINE, "RAINMACHINE",
+	     "RAINMACHINE Sprinkler v2", rainmachine_setup);
