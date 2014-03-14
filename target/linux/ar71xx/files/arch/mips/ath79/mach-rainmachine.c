@@ -71,6 +71,12 @@ static struct gpio_keys_button rainmachine_gpio_keys[] __initdata = {
 	}
 };
 
+struct led_platform_data pca9952_data = {
+     .num_leds = 16,
+};
+
+
+
 /*
 static struct resource rainmachine_gpio_resources[] = {
         {
@@ -104,8 +110,12 @@ static struct platform_device rainmachine_i2c_gpio = {
 
 /* register i2c devices */
 static struct i2c_board_info rainmachine_i2c_devs[] __initdata = {
-	{ I2C_BOARD_INFO("rmtouch", 0x44), },
-	{ I2C_BOARD_INFO("pcf8523", 0x68), }, //1101000x
+	{ I2C_BOARD_INFO("rmtouch", 0x44), }, /* 1000100x - Touch/Proximity controller */
+	{ I2C_BOARD_INFO("pcf8523", 0x68), }, /* 1101000x - RTC */
+	{ 
+		I2C_BOARD_INFO("pca9552", 0x67),
+		.platform_data = &pca9952_data,
+	}, /* 1100111x - Display/Led controller */
 };
 
 /*
@@ -120,7 +130,7 @@ static void __init rainmachine_setup(void)
 	u8 *mac = (u8 *) KSEG1ADDR(0x1f01fc00);
 	u8 *ee = (u8 *) KSEG1ADDR(0x1fff1000);
 
-/* i2c devices */
+	/* i2c devices */
 	/*platform_add_devices(rainmachine_devices, ARRAY_SIZE(rainmachine_devices));*/
 	i2c_register_board_info(0, rainmachine_i2c_devs, ARRAY_SIZE(rainmachine_i2c_devs));
 	platform_device_register(&rainmachine_i2c_gpio);
