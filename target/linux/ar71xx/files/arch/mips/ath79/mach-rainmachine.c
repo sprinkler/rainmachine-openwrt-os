@@ -75,7 +75,10 @@ struct led_platform_data pca9952_data = {
      .num_leds = 16,
 };
 
-
+static struct platform_device rmvalve_device = {
+        .name           = "rmvalves",
+        .id             = -1,
+};
 
 /*
 static struct resource rainmachine_gpio_resources[] = {
@@ -134,7 +137,7 @@ static void __init rainmachine_setup(void)
 	/*platform_add_devices(rainmachine_devices, ARRAY_SIZE(rainmachine_devices));*/
 	i2c_register_board_info(0, rainmachine_i2c_devs, ARRAY_SIZE(rainmachine_i2c_devs));
 	platform_device_register(&rainmachine_i2c_gpio);
-
+	platform_device_register(&rmvalve_device);
 
 
 #ifdef ENABLE_LAN
