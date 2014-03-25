@@ -56,7 +56,7 @@ static struct gpio_led rainmachine_leds_gpio[] __initdata = {
 	 {
 		.name		= "tp-link:green:wlan",
 		.gpio		= RAINMACHINE_GPIO_LED_WLAN,
-		.active_low	= 0,
+		.active_low	= 1,
 	},
 };
 
@@ -67,7 +67,7 @@ static struct gpio_keys_button rainmachine_gpio_keys[] __initdata = {
 		.code		= KEY_RESTART,
 		.debounce_interval = RAINMACHINE_KEYS_DEBOUNCE_INTERVAL,
 		.gpio		= RAINMACHINE_GPIO_BTN_RESET,
-		.active_low	= 0,
+		.active_low	= 1,
 	}
 };
 
