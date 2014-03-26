@@ -71,7 +71,7 @@ static struct gpio_keys_button rainmachine_gpio_keys[] __initdata = {
 	}
 };
 
-struct led_platform_data pca9952_data = {
+struct led_platform_data rmleds_data = {
      .num_leds = 16,
 };
 
@@ -116,8 +116,8 @@ static struct i2c_board_info rainmachine_i2c_devs[] __initdata = {
 	{ I2C_BOARD_INFO("rmtouch", 0x44), }, /* 1000100x - Touch/Proximity controller */
 	{ I2C_BOARD_INFO("pcf8523", 0x68), }, /* 1101000x - RTC */
 	{ 
-		I2C_BOARD_INFO("pca9552", 0x67),
-		.platform_data = &pca9952_data,
+		I2C_BOARD_INFO("rmleds", 0x67),
+		.platform_data = &rmleds_data,
 	}, /* 1100111x - Display/Led controller */
 };
 
