@@ -54,9 +54,9 @@ static struct flash_platform_data rainmachine_flash_data = {
 
 static struct gpio_led rainmachine_leds_gpio[] __initdata = {
 	 {
-		.name		= "tp-link:green:wlan",
+		.name		= "rainmachine:wlan",
 		.gpio		= RAINMACHINE_GPIO_LED_WLAN,
-		.active_low	= 1,
+		.active_low	= 0,
 	},
 };
 

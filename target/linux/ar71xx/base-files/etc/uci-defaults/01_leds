@@ -344,6 +344,11 @@ zcn-1523h-5)
 	ucidef_set_led_netdev "lan1" "lan1" "zcn-1523h:green:lan1" "eth0"
 	ucidef_set_led_netdev "lan2" "lan2" "zcn-1523h:green:lan2" "eth1"
 	;;
+
+rainmachine)
+	ucidef_set_led_netdev "wlan" "Wireless" "rainmachine:wlan" "wlan0"
+	;;
+
 esac
 
 ucidef_commit_leds

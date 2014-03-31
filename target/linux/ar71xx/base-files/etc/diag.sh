@@ -221,7 +221,7 @@ get_status_led() {
 		status_led="sitecom:amber:status"
 		;;
 	rainmachine)
-                status_led="tp-link:green:wps"
+                status_led="rm-14"
                 ;;
 	esac
 }
