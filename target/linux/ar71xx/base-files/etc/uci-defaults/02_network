@@ -362,7 +362,19 @@ wndr3700)
 	# 'led' setting below.
 	uci set network.@switch_port[-1].led='2'
 	;;
-
+rainmachine)
+	uci set network.loopback=interface
+	uci set network.loopback.ifname=lo
+	uci set network.loopback.proto=static
+	uci set network.loopback.ipaddr=127.0.0.1
+	uci set network.loopback.netmask=255.0.0.0
+	uci set network.globals=globals
+	uci set network.globals.ula_prefix=fd4c:71fa:97bd::/48
+	uci set network.wlan0=interface
+	uci set network.wlan0.netmask=255.255.255.0
+	uci set network.wlan0.ipaddr=192.168.1.1
+	uci set network.wlan0.proto=static
+	;;
 *)
 	ucidef_set_interfaces_lan_wan "eth0" "eth1"
 	;;
