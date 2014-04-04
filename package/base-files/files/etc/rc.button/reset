@@ -14,5 +14,5 @@ then
 elif [ "$SEEN" -gt 5 ]
 then
 	echo "FACTORY RESET" > /dev/console
-	jffs2reset -y && reboot &
+	touch /tmp/factory-reset
 fi
