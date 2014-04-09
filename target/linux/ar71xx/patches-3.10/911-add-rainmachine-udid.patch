@@ -1,0 +1,74 @@
+--- a/drivers/mtd/devices/m25p80.c	2014-04-09 13:05:13.000000000 +0300
++++ b/drivers/mtd/devices/m25p80.c	2014-04-09 13:54:34.229215574 +0300
+@@ -35,6 +35,8 @@
+ #include <linux/spi/spi.h>
+ #include <linux/spi/flash.h>
+ 
++#include <linux/sysfs.h>
++
+ /* Flash opcodes. */
+ #define	OPCODE_WREN		0x06	/* Write enable */
+ #define	OPCODE_RDSR		0x05	/* Read status register */
+@@ -96,6 +98,9 @@
+ 	size_t			max_read_len;
+ };
+ 
++static char			udid[20];
++
++
+ static inline struct m25p *mtd_to_m25p(struct mtd_info *mtd)
+ {
+ 	return container_of(mtd, struct m25p, mtd);
+@@ -936,6 +941,31 @@
+ 	return ERR_PTR(-ENODEV);
+ }
+ 
++static const struct spi_device_id *udid_read(struct spi_device *spi)
++{
++	int			tmp;
++	u8			code[5] = {0x4b, 0x00, 0x00, 0x00, 0x00 };
++	u8			id[8];
++
++	tmp = spi_write_then_read(spi, &code, 5, id, 8);
++	if (tmp < 0) {
++		pr_debug("%s: error %d reading UDID\n",
++				dev_name(&spi->dev), tmp);
++		return ERR_PTR(tmp);
++	}
++
++	snprintf(udid, sizeof(udid), "%02X%02X%02X%02X%02X%02X%02X%02X", id[0], id[1], id[2], id[3], id[4], id[5], id[6], id[7]);
++	pr_debug("%s: UDID: %s\n", dev_name(&spi->dev), udid);
++
++	return 0;
++}
++
++static ssize_t machine_udid_show(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	return snprintf(buf, PAGE_SIZE, "%s", udid);
++}
++
++DEVICE_ATTR(machine_udid, 0444, machine_udid_show, NULL);
+ 
+ /*
+  * board specific setup should have ensured the SPI clock used here
+@@ -1002,6 +1032,10 @@
+ 		}
+ 	}
+ 
++	/* Read UDID for Winbond chips */
++	if (info->jedec_id == 0xef4018) 
++		udid_read(spi);
++
+ 	flash = kzalloc(sizeof *flash, GFP_KERNEL);
+ 	if (!flash)
+ 		return -ENOMEM;
+@@ -1120,7 +1154,8 @@
+ 				flash->mtd.eraseregions[i].erasesize / 1024,
+ 				flash->mtd.eraseregions[i].numblocks);
+ 
+-
++	/* create simple sysfs file to show the UDID */
++	device_create_file(&spi->dev, &dev_attr_machine_udid);
+ 	/* partitions should match sector boundaries; and it may be good to
+ 	 * use readonly partitions for writeprotected sectors (BP2..BP0).
+ 	 */
