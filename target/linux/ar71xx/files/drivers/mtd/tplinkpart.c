@@ -158,7 +158,17 @@ static int tplink_parse_partitions(struct mtd_info *master,
 	parts[2].name = "rootfs";
 	parts[2].offset = rootfs_offset;
 	parts[2].size = art_offset - rootfs_offset;
+#define FACTORY_LAYOUT 1
+#ifdef FACTORY_LAYOUT
+	parts[3].name = "firmware";
+	parts[3].offset = offset;
+	parts[3].size = art_offset - offset;
 
+	parts[4].name = "art";
+	parts[4].offset = art_offset;
+	parts[4].size = TPLINK_ART_LEN;
+/*	parts[4].mask_flags = MTD_WRITEABLE; */
+#else
 	parts[3].name = "art";
 	parts[3].offset = art_offset;
 	parts[3].size = TPLINK_ART_LEN;
@@ -167,7 +177,7 @@ static int tplink_parse_partitions(struct mtd_info *master,
 	parts[4].name = "firmware";
 	parts[4].offset = offset;
 	parts[4].size = art_offset - offset;
-
+#endif
 	vfree(header);
 
 	*pparts = parts;
