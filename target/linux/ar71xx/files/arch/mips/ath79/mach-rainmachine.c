@@ -28,7 +28,7 @@
 #include "dev-wmac.h"
 #include "machtypes.h"
 
-#undef ENABLE_LAN
+#define ENABLE_LAN 1
 #undef ENABLE_WATCHDOG
 
 #define RAINMACHINE_GPIO_BTN_RESET	20
