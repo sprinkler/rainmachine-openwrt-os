@@ -1,0 +1,3 @@
+#!/bin/sh
+hwclock -w -u
+echo `date` > /tmp/systohc

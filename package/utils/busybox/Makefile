@@ -109,6 +109,7 @@ define Package/busybox/install
 	$(INSTALL_BIN) ./files/cron $(1)/etc/init.d/cron
 	$(INSTALL_BIN) ./files/telnet $(1)/etc/init.d/telnet
 	$(INSTALL_BIN) ./files/sysntpd $(1)/etc/init.d/sysntpd
+	$(INSTALL_BIN) ./files/systohc $(1)/bin/systohc
 	-rm -rf $(1)/lib64
 endef
 
