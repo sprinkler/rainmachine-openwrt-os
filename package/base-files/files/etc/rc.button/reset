@@ -9,6 +9,8 @@ logger "$BUTTON pressed for $SEEN seconds"
 if [ "$SEEN" -lt 1 ]
 then
 	echo "REBOOT" > /dev/console
+	#Stop all valves on reboot
+	for i in $(seq 40 47); do echo 0 > /sys/class/gpio/gpio$i/value; done
 	sync
 	reboot
 elif [ "$SEEN" -gt 5 ]
