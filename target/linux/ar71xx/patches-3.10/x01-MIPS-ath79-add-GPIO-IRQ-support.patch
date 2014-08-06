@@ -1,0 +1,353 @@
+From c581561680057e1e18cc7dbff8cfd1e21a96be7a Mon Sep 17 00:00:00 2001
+From: Gabor Juhos <juhosg@openwrt.org>
+Date: Fri, 14 Mar 2014 10:40:02 +0100
+Subject: [PATCH] MIPS: ath79: add GPIO IRQ support
+
+Signed-off-by: Gabor Juhos <juhosg@openwrt.org>
+---
+ arch/mips/ath79/gpio.c                  |  256 +++++++++++++++++++++++++++----
+ arch/mips/include/asm/mach-ath79/gpio.h |   13 +-
+ arch/mips/include/asm/mach-ath79/irq.h  |    7 +-
+ 3 files changed, 238 insertions(+), 38 deletions(-)
+
+--- a/arch/mips/ath79/gpio.c
++++ b/arch/mips/ath79/gpio.c
+@@ -17,9 +17,11 @@
+ #include <linux/module.h>
+ #include <linux/types.h>
+ #include <linux/spinlock.h>
++#include <linux/interrupt.h>
+ #include <linux/io.h>
+ #include <linux/ioport.h>
+ #include <linux/gpio.h>
++#include <linux/irqchip/chained_irq.h>
+ 
+ #include <asm/mach-ath79/ar71xx_regs.h>
+ #include <asm/mach-ath79/ath79.h>
+@@ -130,15 +132,243 @@ static int ar934x_gpio_direction_output(
+ 	return 0;
+ }
+ 
++static int ath79_gpio_to_irq(struct gpio_chip *chip, unsigned offset)
++{
++	return ATH79_GPIO_IRQ_BASE + offset;
++}
++
+ static struct gpio_chip ath79_gpio_chip = {
+ 	.label			= "ath79",
+ 	.get			= ath79_gpio_get_value,
+ 	.set			= ath79_gpio_set_value,
+ 	.direction_input	= ath79_gpio_direction_input,
+ 	.direction_output	= ath79_gpio_direction_output,
++	.to_irq			= ath79_gpio_to_irq,
+ 	.base			= 0,
+ };
+ 
++static u32 ath79_gpio_int_enable;
++static u32 ath79_gpio_int_polarity;
++
++static void ath79_gpio_irq_unmask(struct irq_data *data)
++{
++	void __iomem *base = ath79_gpio_base;
++	int offset = data->irq - ATH79_GPIO_IRQ_BASE;
++
++	ath79_gpio_int_enable |= BIT(offset);
++	__raw_writel(ath79_gpio_int_enable, base + AR71XX_GPIO_REG_INT_ENABLE);
++	/* flush write */
++	__raw_readl(base + AR71XX_GPIO_REG_INT_ENABLE);
++}
++
++static void ath79_gpio_irq_mask(struct irq_data *data)
++{
++	void __iomem *base = ath79_gpio_base;
++	int offset = data->irq - ATH79_GPIO_IRQ_BASE;
++
++	ath79_gpio_int_enable &= ~BIT(offset);
++	__raw_writel(ath79_gpio_int_enable, base + AR71XX_GPIO_REG_INT_ENABLE);
++	/* flush write */
++	__raw_readl(base + AR71XX_GPIO_REG_INT_ENABLE);
++}
++
++static int ath79_gpio_irq_set_type(struct irq_data *data, unsigned int type)
++{
++	void __iomem *base = ath79_gpio_base;
++	u32 bit = BIT(data->irq - ATH79_GPIO_IRQ_BASE);
++	unsigned long flags;
++	u32 polarity;
++	u32 level;
++	u32 t;
++
++	switch (type & IRQ_TYPE_SENSE_MASK) {
++	case IRQ_TYPE_DEFAULT:
++		/* fallthrough */
++	case IRQ_TYPE_LEVEL_HIGH:
++		level = bit;
++		polarity = bit;
++		break;
++
++	case IRQ_TYPE_LEVEL_LOW:
++		level = bit;
++		polarity = 0;
++		break;
++
++	case IRQ_TYPE_EDGE_RISING:
++		level = 0;
++		polarity = bit;
++		break;
++
++	case IRQ_TYPE_EDGE_FALLING:
++		level = 0;
++		polarity = 0;
++		break;
++
++	case IRQ_TYPE_EDGE_BOTH:
++		level = bit;
++		t = __raw_readl(base + AR71XX_GPIO_REG_IN) & bit;
++		polarity = t ^ bit;
++
++		break;
++
++	case IRQ_TYPE_NONE:
++	default:
++		return -EINVAL;
++	}
++
++	spin_lock_irqsave(&ath79_gpio_lock, flags);
++
++	ath79_gpio_int_polarity &= ~bit;
++	ath79_gpio_int_polarity |= polarity;
++
++	t = __raw_readl(base + AR71XX_GPIO_REG_INT_TYPE);
++	t &= ~bit;
++	t |= level;
++
++	__raw_writel(t, base + AR71XX_GPIO_REG_INT_TYPE);
++	/* flush write */
++	__raw_readl(base + AR71XX_GPIO_REG_INT_TYPE);
++
++	__raw_writel(ath79_gpio_int_polarity,
++		     base + AR71XX_GPIO_REG_INT_POLARITY);
++	/* flush write */
++	__raw_readl(base + AR71XX_GPIO_REG_INT_POLARITY);
++
++	t = __raw_readl(base + AR71XX_GPIO_REG_INT_MODE);
++	t |= bit;
++	__raw_writel(t, base + AR71XX_GPIO_REG_INT_MODE);
++	/* flush write */
++	__raw_readl(base + AR71XX_GPIO_REG_INT_MODE);
++
++	spin_unlock_irqrestore(&ath79_gpio_lock, flags);
++
++	return 0;
++};
++
++static struct irq_chip ath79_gpio_irq_chip = {
++	.name = "GPIO",
++	.irq_unmask = ath79_gpio_irq_unmask,
++	.irq_mask = ath79_gpio_irq_mask,
++	.irq_set_type = ath79_gpio_irq_set_type,
++	.flags = IRQCHIP_SET_TYPE_MASKED,
++};
++
++static void ath79_gpio_irq_handler(unsigned int irq, struct irq_desc *desc)
++{
++	void __iomem *base = ath79_gpio_base;
++	u32 pending;
++	u32 in;
++
++	chained_irq_enter(irq_desc_get_chip(desc), desc);
++
++	in = __raw_readl(base + AR71XX_GPIO_REG_IN);
++	pending = __raw_readl(base + AR71XX_GPIO_REG_INT_PENDING);
++	pending &= ath79_gpio_int_enable;
++
++	if (!pending)
++		goto exit;
++
++	pr_debug("GPIO IRQ pending:%08x in:%08x pol:%08x mask:%08x type:%08x mode:%08x\n",
++		 pending, in,
++		 __raw_readl(base + AR71XX_GPIO_REG_INT_POLARITY),
++		 __raw_readl(base + AR71XX_GPIO_REG_INT_ENABLE),
++		 __raw_readl(base + AR71XX_GPIO_REG_INT_TYPE),
++		 __raw_readl(base + AR71XX_GPIO_REG_INT_MODE));
++
++	while (pending) {
++		unsigned int offset;
++		unsigned int bit;
++		unsigned int child_irq;
++		struct irq_desc *child_desc;
++		unsigned int trigger;
++
++		offset = __ffs(pending);
++		bit = BIT(offset);
++
++		pending &= ~bit;
++
++		child_irq = ATH79_GPIO_IRQ_BASE + offset;
++		child_desc = irq_to_desc(child_irq);
++		trigger = irqd_get_trigger_type(&child_desc->irq_data);
++
++		switch (trigger) {
++		case IRQ_TYPE_EDGE_RISING:
++		case IRQ_TYPE_EDGE_FALLING:
++			/*
++			 * Workaround for a hardware issue.
++			 *
++			 * It seems that the controller ignores the POLARITY
++			 * register settings for egde-sensitive lines and
++			 * generates an interrupt both on rising and falling
++			 * edges.
++			 *
++			 * Skip the actual interrupt if that does not match
++			 * with the requested flow type.
++			 */
++			if ((in & bit) != (ath79_gpio_int_polarity & bit)) {
++				pr_debug("GPIO%d %s edge interrupt skipped\n",
++					 offset,
++					 (in & bit) ? "rising" : "falling");
++				continue;
++			}
++			break;
++
++		case IRQ_TYPE_EDGE_BOTH:
++			pr_debug("GPIO%d %s edge interrupt handled\n", offset,
++				 (ath79_gpio_int_polarity & bit) ?
++				 "rising" : "falling");
++
++			ath79_gpio_int_polarity ^= bit;
++			__raw_writel(ath79_gpio_int_polarity,
++				     base + AR71XX_GPIO_REG_INT_POLARITY);
++			break;
++		}
++
++		generic_handle_irq(child_irq);
++	}
++
++exit:
++	chained_irq_exit(irq_desc_get_chip(desc), desc);
++}
++
++static int ath79_gpio_irq_setup(void)
++{
++	void __iomem *base = ath79_gpio_base;
++	int irq;
++	int i;
++
++	/* mask and clear all interrupts */
++	__raw_writel(0, base + AR71XX_GPIO_REG_INT_ENABLE);
++	__raw_writel(0, base + AR71XX_GPIO_REG_INT_PENDING);
++
++	/* disable interrupt mode for each lines */
++	__raw_writel(0, base + AR71XX_GPIO_REG_INT_MODE);
++
++	/* set type of all interrupts to level triggered */
++	__raw_writel(~0, base + AR71XX_GPIO_REG_INT_TYPE);
++	/* set polarity of all interrupts to active high */
++	__raw_writel(~0, base + AR71XX_GPIO_REG_INT_POLARITY);
++
++	for (i = 0; i < ath79_gpio_count; i++)
++		irq_set_chip_and_handler(ATH79_GPIO_IRQ_BASE + i,
++					 &ath79_gpio_irq_chip,
++					 handle_simple_irq);
++
++	if (soc_is_ar71xx() ||
++	    soc_is_ar724x() ||
++	    soc_is_ar913x() ||
++	    soc_is_ar933x() ||
++	    soc_is_ar934x() ||
++	    soc_is_qca955x())
++		irq = ATH79_MISC_IRQ(2);
++	else
++		BUG();
++
++	irq_set_chained_handler(irq, ath79_gpio_irq_handler);
++
++	return 0;
++}
++
+ static void __iomem *ath79_gpio_get_function_reg(void)
+ {
+ 	u32 reg = 0;
+@@ -241,36 +471,6 @@ void __init ath79_gpio_init(void)
+ 	err = gpiochip_add(&ath79_gpio_chip);
+ 	if (err)
+ 		panic("cannot add AR71xx GPIO chip, error=%d", err);
+-}
+-
+-int gpio_get_value(unsigned gpio)
+-{
+-	if (gpio < ath79_gpio_count)
+-		return __ath79_gpio_get_value(gpio);
+-
+-	return __gpio_get_value(gpio);
+-}
+-EXPORT_SYMBOL(gpio_get_value);
+-
+-void gpio_set_value(unsigned gpio, int value)
+-{
+-	if (gpio < ath79_gpio_count)
+-		__ath79_gpio_set_value(gpio, value);
+-	else
+-		__gpio_set_value(gpio, value);
+-}
+-EXPORT_SYMBOL(gpio_set_value);
+ 
+-int gpio_to_irq(unsigned gpio)
+-{
+-	/* FIXME */
+-	return -EINVAL;
+-}
+-EXPORT_SYMBOL(gpio_to_irq);
+-
+-int irq_to_gpio(unsigned irq)
+-{
+-	/* FIXME */
+-	return -EINVAL;
++	ath79_gpio_irq_setup();
+ }
+-EXPORT_SYMBOL(irq_to_gpio);
+--- a/arch/mips/include/asm/mach-ath79/gpio.h
++++ b/arch/mips/include/asm/mach-ath79/gpio.h
+@@ -16,11 +16,14 @@
+ #define ARCH_NR_GPIOS	64
+ #include <asm-generic/gpio.h>
+ 
+-int gpio_to_irq(unsigned gpio);
+-int irq_to_gpio(unsigned irq);
+-int gpio_get_value(unsigned gpio);
+-void gpio_set_value(unsigned gpio, int value);
+-
++#define gpio_to_irq	__gpio_to_irq
++#define gpio_get_value	__gpio_get_value
++#define gpio_set_value	__gpio_set_value
+ #define gpio_cansleep	__gpio_cansleep
+ 
++static inline int irq_to_gpio(unsigned int irq)
++{
++	return -EINVAL;
++}
++
+ #endif /* __ASM_MACH_ATH79_GPIO_H */
+--- a/arch/mips/include/asm/mach-ath79/irq.h
++++ b/arch/mips/include/asm/mach-ath79/irq.h
+@@ -10,7 +10,7 @@
+ #define __ASM_MACH_ATH79_IRQ_H
+ 
+ #define MIPS_CPU_IRQ_BASE	0
+-#define NR_IRQS			51
++#define NR_IRQS			83
+ 
+ #define ATH79_CPU_IRQ(_x)	(MIPS_CPU_IRQ_BASE + (_x))
+ 
+@@ -18,7 +18,10 @@
+ #define ATH79_MISC_IRQ_COUNT	32
+ #define ATH79_MISC_IRQ(_x)	(ATH79_MISC_IRQ_BASE + (_x))
+ 
+-#define ATH79_PCI_IRQ_BASE	(ATH79_MISC_IRQ_BASE + ATH79_MISC_IRQ_COUNT)
++#define ATH79_GPIO_IRQ_BASE	(ATH79_MISC_IRQ_BASE + ATH79_MISC_IRQ_COUNT)
++#define ATH79_GPIO_IRQ_COUNT	32
++
++#define ATH79_PCI_IRQ_BASE	(ATH79_GPIO_IRQ_BASE + ATH79_GPIO_IRQ_COUNT)
+ #define ATH79_PCI_IRQ_COUNT	6
+ #define ATH79_PCI_IRQ(_x)	(ATH79_PCI_IRQ_BASE + (_x))
+ 
