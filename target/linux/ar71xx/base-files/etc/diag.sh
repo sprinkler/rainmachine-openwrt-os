@@ -221,7 +221,7 @@ get_status_led() {
 		status_led="sitecom:amber:status"
 		;;
 	rainmachine)
-                status_led="rm-14"
+                status_led="rm-0"
                 ;;
 	esac
 }
@@ -231,13 +231,26 @@ set_state() {
 
 	case "$1" in
 	preinit)
-		status_led_blink_preinit
+		#status_led_blink_preinit
+		echo "timer" > /sys/class/leds/rm-6/trigger ; echo "timer" > /sys/class/leds/rm-0/trigger; echo "timer" > /sys/class/leds/rm-2/trigger
+
+		echo "900" > /sys/class/leds/rm-2/delay_off
+		echo "300" > /sys/class/leds/rm-2/delay_on
+                                          
+		echo "800" > /sys/class/leds/rm-0/delay_off
+		echo "200" > /sys/class/leds/rm-0/delay_on 
+                                          
+		echo "700" > /sys/class/leds/rm-6/delay_off
+		echo "100" > /sys/class/leds/rm-6/delay_on 
 		;;
 	failsafe)
 		status_led_blink_failsafe
 		;;
 	done)
-		status_led_on
+		#status_led_off
+		led_off "rm-2"
+		led_off "rm-0"
+		led_off "rm-6"
 		;;
 	esac
 }
