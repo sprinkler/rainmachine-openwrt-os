@@ -346,7 +346,7 @@ zcn-1523h-5)
 	;;
 
 rainmachine)
-	ucidef_set_led_netdev "wlan" "Wireless" "rainmachine:wlan" "wlan0"
+	ucidef_set_led_wlan "wlan" "Wireless" "rainmachine:wlan" "phy0assoc"
 	;;
 
 esac
