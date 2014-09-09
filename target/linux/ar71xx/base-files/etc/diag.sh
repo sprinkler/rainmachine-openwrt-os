@@ -231,7 +231,7 @@ set_state() {
 
 	case "$1" in
 	preinit)
-		/usr/sbin/rainmachine-led-anim /etc/rainmachine-boot-animation.conf&
+		#Nothing there is an animation from a separate daemon
 		;;
 	failsafe)
 		status_led_blink_failsafe
