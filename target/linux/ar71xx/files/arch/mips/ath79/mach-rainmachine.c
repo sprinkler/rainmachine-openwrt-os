@@ -28,8 +28,9 @@
 #include "dev-wmac.h"
 #include "machtypes.h"
 
-#define ENABLE_LAN 1
+#define ENABLE_LAN
 #undef ENABLE_WATCHDOG
+#define ENABLE_BUZZER
 
 #define RAINMACHINE_GPIO_BTN_RESET	20
 
@@ -40,8 +41,12 @@
 #define RAINMACHINE_GPIO_LED_LAN3	16
 #define RAINMACHINE_GPIO_LED_LAN4	17
 
+#define RAINMACHINE_GPIO_BUZZER		12
+
 #define RAINMACHINE_KEYS_POLL_INTERVAL	20	/* msecs */
 #define RAINMACHINE_KEYS_DEBOUNCE_INTERVAL (3 * RAINMACHINE_KEYS_POLL_INTERVAL)
+
+#define GPIO_REG_FUNC2			0x30
 
 static const char *rainmachine_part_probes[] = {
 	"tp-link",
@@ -128,8 +133,25 @@ static struct platform_device *rainmachine_devices[] __initdata = {
 };
 */
 
+static void ath79_gpio_extended_function_setup(u32 set, u32 clear)
+{
+	static DEFINE_SPINLOCK(lock);
+	unsigned long flags;
+	void __iomem *reg = ath79_gpio_base;
+	u32 value;
+
+	spin_lock_irqsave(&lock, flags);
+	 __raw_readl(reg + GPIO_REG_FUNC2);
+	value = (__raw_readl(reg + GPIO_REG_FUNC2) & ~clear) | set;
+	__raw_writel(value, reg + GPIO_REG_FUNC2);
+	__raw_readl(reg + GPIO_REG_FUNC2); 	/* flush write */
+
+	spin_unlock_irqrestore(&lock, flags);
+}
+
 static void __init rainmachine_setup(void)
 {
+	int err;
 	u8 *mac = (u8 *) KSEG1ADDR(0x1f01fc00);
 	u8 *ee = (u8 *) KSEG1ADDR(0x1fff1000);
 
@@ -173,6 +195,15 @@ static void __init rainmachine_setup(void)
 
 #ifdef ENABLE_WATCHDOG
 	ath79_register_wdt();
+#endif
+
+#ifdef ENABLE_BUZZER
+	ath79_gpio_function_disable(AR933X_GPIO_FUNC_UART_RTS_CTS_EN);
+	ath79_gpio_extended_function_setup(BIT(8), 0); /* Set bit 8 on to disable WPS on GPIO12, 0 means don't clean anything */
+
+	err = gpio_request_one(RAINMACHINE_GPIO_BUZZER, GPIOF_DIR_OUT | GPIOF_INIT_LOW | GPIOF_EXPORT_DIR_FIXED, "buzzer");
+	if (err)
+		pr_err("unable to request GPIO %d for buzzer\n", RAINMACHINE_GPIO_BUZZER);
 #endif
 
 	ath79_register_wmac(ee, mac);
