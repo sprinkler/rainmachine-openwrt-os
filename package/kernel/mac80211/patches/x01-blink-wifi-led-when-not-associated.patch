@@ -1,0 +1,18 @@
+--- a/net/mac80211/led.c	2014-11-24 10:48:35.475086882 +0200
++++ b/net/mac80211/led.c	2014-11-24 10:48:12.819085903 +0200
+@@ -50,12 +50,14 @@
+ 
+ void ieee80211_led_assoc(struct ieee80211_local *local, bool associated)
+ {
++	int off = 500, on = 500;
++
+ 	if (unlikely(!local->assoc_led))
+ 		return;
+ 	if (associated)
+ 		led_trigger_event(local->assoc_led, LED_FULL);
+ 	else
+-		led_trigger_event(local->assoc_led, LED_OFF);
++		led_trigger_blink(local->assoc_led, &on, &off);
+ }
+ 
+ void ieee80211_led_radio(struct ieee80211_local *local, bool enabled)
