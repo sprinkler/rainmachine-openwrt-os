@@ -11,10 +11,20 @@ then
 	echo "REBOOT" > /dev/console
 	#Stop all valves on reboot
 	for i in $(seq 40 47); do echo 0 > /sys/class/gpio/gpio$i/value; done
+	#Close wlan led
+	echo 0 > /sys/class/leds/rainmachine:wlan/brightness
+	#Close the rest of the leds
+	for i in $(seq 0 15); do echo 0 > /sys/class/leds/rm-$i/brightness; done
+	#Reboot animation
+	/usr/sbin/rainmachine-led-anim /etc/rainmachine-boot-animation.conf &
 	sync
 	reboot
-elif [ "$SEEN" -gt 5 ]
+elif [ "$SEEN" -gt 4 ]
 then
 	echo "FACTORY RESET" > /dev/console
+	#Blink leds
+	for i in $(seq 0 15); do echo timer > /sys/class/leds/rm-$i/trigger; done
+	#Reboot animation
+	/usr/sbin/rainmachine-led-anim /etc/rainmachine-boot-animation.conf &
 	touch /tmp/factory-reset
 fi
