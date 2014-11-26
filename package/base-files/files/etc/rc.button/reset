@@ -15,8 +15,6 @@ then
 	echo 0 > /sys/class/leds/rainmachine:wlan/brightness
 	#Close the rest of the leds
 	for i in $(seq 0 15); do echo 0 > /sys/class/leds/rm-$i/brightness; done
-	#Reboot animation
-	/usr/sbin/rainmachine-led-anim /etc/rainmachine-boot-animation.conf &
 	sync
 	reboot
 elif [ "$SEEN" -gt 4 ]
