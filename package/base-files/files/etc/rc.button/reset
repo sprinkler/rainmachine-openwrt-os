@@ -15,9 +15,11 @@ then
 	echo 0 > /sys/class/leds/rainmachine:wlan/brightness
 	#Close the rest of the leds
 	for i in $(seq 0 15); do echo 0 > /sys/class/leds/rm-$i/brightness; done
+	#Light up the - middle segment of the number led
+	echo 80 > /sys/class/leds/rm-0/brightness
 	sync
 	reboot
-elif [ "$SEEN" -gt 4 ]
+elif [ "$SEEN" -gt 3 ]
 then
 	echo "FACTORY RESET" > /dev/console
 	#Blink leds
