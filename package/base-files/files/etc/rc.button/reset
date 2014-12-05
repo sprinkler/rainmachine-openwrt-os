@@ -22,8 +22,16 @@ then
 elif [ "$SEEN" -gt 3 ]
 then
 	echo "FACTORY RESET" > /dev/console
+	#Beep
+	echo 1 > /sys/class/gpio/gpio12/value
+	sleep 1
+	echo 0 > /sys/class/gpio/gpio12/value
 	#Blink leds
-	for i in $(seq 0 15); do echo timer > /sys/class/leds/rm-$i/trigger; done
+	#for i in $(seq 0 15); do echo timer > /sys/class/leds/rm-$i/trigger; done
+	#Close wlan led
+	echo 0 > /sys/class/leds/rainmachine:wlan/brightness
+	#Close the rest of the leds
+	for i in $(seq 0 15); do echo 0 > /sys/class/leds/rm-$i/brightness; done
 	#Reboot animation
 	/usr/sbin/rainmachine-led-anim /etc/rainmachine-boot-animation.conf &
 	touch /tmp/factory-reset
