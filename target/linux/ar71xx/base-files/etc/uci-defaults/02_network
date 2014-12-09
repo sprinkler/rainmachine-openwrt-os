@@ -372,7 +372,7 @@ rainmachine)
 	uci set network.globals.ula_prefix=fd4c:71fa:97bd::/48
 	uci set network.wlan0=interface
 	uci set network.wlan0.netmask=255.255.255.0
-	uci set network.wlan0.ipaddr=192.168.1.1
+	uci set network.wlan0.ipaddr=192.168.13.1
 	uci set network.wlan0.proto=static
 	;;
 *)
