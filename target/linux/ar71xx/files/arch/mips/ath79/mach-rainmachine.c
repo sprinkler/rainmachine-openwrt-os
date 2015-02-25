@@ -61,6 +61,7 @@ static struct gpio_led rainmachine_leds_gpio[] __initdata = {
 	 {
 		.name		= "rainmachine:wlan",
 		.gpio		= RAINMACHINE_GPIO_LED_WLAN,
+		.default_state  = LEDS_GPIO_DEFSTATE_OFF,
 		.active_low	= 0,
 	},
 };
@@ -171,6 +172,7 @@ static void __init rainmachine_setup(void)
 				    AR933X_GPIO_FUNC_ETH_SWITCH_LED3_EN |
 				    AR933X_GPIO_FUNC_ETH_SWITCH_LED4_EN);
 #endif
+	gpio_set_value(RAINMACHINE_GPIO_LED_WLAN, 0);
 
 	ath79_register_leds_gpio(-1, ARRAY_SIZE(rainmachine_leds_gpio),
 				 rainmachine_leds_gpio);
