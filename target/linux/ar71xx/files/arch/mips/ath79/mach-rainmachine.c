@@ -86,6 +86,11 @@ static struct platform_device rmvalve_device = {
         .id             = -1,
 };
 
+static struct platform_device rmsensor_device = {
+        .name           = "rmsensor",
+        .id             = -1,
+};
+
 /*
 static struct resource rainmachine_gpio_resources[] = {
         {
@@ -161,6 +166,7 @@ static void __init rainmachine_setup(void)
 	i2c_register_board_info(0, rainmachine_i2c_devs, ARRAY_SIZE(rainmachine_i2c_devs));
 	platform_device_register(&rainmachine_i2c_gpio);
 	platform_device_register(&rmvalve_device);
+	platform_device_register(&rmsensor_device);
 
 
 #ifdef ENABLE_LAN
