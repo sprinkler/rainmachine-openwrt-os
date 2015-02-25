@@ -374,6 +374,8 @@ rainmachine)
 	uci set network.wlan0.netmask=255.255.255.0
 	uci set network.wlan0.ipaddr=192.168.13.1
 	uci set network.wlan0.proto=static
+	# DHCP client hostname
+	uci set network.wlan0.hostname=RainMachine 
 	;;
 *)
 	ucidef_set_interfaces_lan_wan "eth0" "eth1"
