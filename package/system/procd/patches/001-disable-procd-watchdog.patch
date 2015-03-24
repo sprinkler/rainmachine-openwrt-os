@@ -1,0 +1,32 @@
+diff -ur procd-2014-02-17/initd/init.c procd-2014-02-17-disabled-watchdog/initd/init.c
+--- procd-2014-02-17/initd/init.c	2015-03-23 14:50:52.641679340 +0200
++++ procd-2014-02-17-disabled-watchdog/initd/init.c	2015-03-23 14:48:54.000000000 +0200
+@@ -84,7 +84,7 @@
+ 
+ 	early();
+ 	cmdline();
+-	watchdog_init(1);
++	//watchdog_init(1);
+ 
+ 	pid = fork();
+ 	if (!pid) {
+diff -ur procd-2014-02-17/state.c procd-2014-02-17-disabled-watchdog/state.c
+--- procd-2014-02-17/state.c	2015-03-23 14:51:11.057680134 +0200
++++ procd-2014-02-17-disabled-watchdog/state.c	2015-03-23 14:48:48.000000000 +0200
+@@ -42,14 +42,14 @@
+ 	switch (state) {
+ 	case STATE_EARLY:
+ 		LOG("- early -\n");
+-		watchdog_init(0);
++		//watchdog_init(0);
+ 		hotplug("/etc/hotplug.json");
+ 		procd_coldplug();
+ 		break;
+ 
+ 	case STATE_INIT:
+ 		// try to reopen incase the wdt was not available before coldplug
+-		watchdog_init(0);
++		//watchdog_init(0);
+ 		LOG("- ubus -\n");
+ 		procd_connect_ubus();
+ 
