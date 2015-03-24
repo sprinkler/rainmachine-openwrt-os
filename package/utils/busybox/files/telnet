@@ -4,6 +4,7 @@
 START=50
 
 USE_PROCD=1
+ENABLED=0
 PROG=/usr/sbin/telnetd
 
 has_root_pwd() {
@@ -27,9 +28,9 @@ has_ssh_pubkey() {
 }
 
 start_service() {
-	if ( ! has_ssh_pubkey && \
+	if ( $ENABLED && (! has_ssh_pubkey && \
 	     ! has_root_pwd /etc/passwd && ! has_root_pwd /etc/shadow ) || \
-	   ( ! /etc/init.d/dropbear enabled 2> /dev/null && ! /etc/init.d/sshd enabled 2> /dev/null );
+	   ( ! /etc/init.d/dropbear enabled 2> /dev/null && ! /etc/init.d/sshd enabled 2> /dev/null ));
 	then
 		procd_open_instance
 		procd_set_param command "$PROG" -F -l /bin/login.sh
