@@ -1,0 +1,34 @@
+diff --git a/drivers/watchdog/ath79_wdt.c b/drivers/watchdog/ath79_wdt.c
+index b119cb0..c4b69ed 100644
+--- a/drivers/watchdog/ath79_wdt.c
++++ b/drivers/watchdog/ath79_wdt.c
+@@ -35,10 +35,11 @@
+ #include <linux/err.h>
+ #include <linux/of.h>
+ #include <linux/of_platform.h>
++#include <linux/delay.h>
+ 
+ #define DRIVER_NAME	"ath79-wdt"
+ 
+-#define WDT_TIMEOUT	15	/* seconds */
++#define WDT_TIMEOUT	20	/* seconds */ /* maximum supported */
+ 
+ #define WDOG_REG_CTRL		0x00
+ #define WDOG_REG_TIMER		0x04
+@@ -91,6 +92,7 @@ static inline void ath79_wdt_keepalive(void)
+ static inline void ath79_wdt_enable(void)
+ {
+ 	ath79_wdt_keepalive();
++	udelay(2);
+ 	ath79_wdt_wr(WDOG_REG_CTRL, WDOG_CTRL_ACTION_FCR);
+ 	/* flush write */
+ 	ath79_wdt_rr(WDOG_REG_CTRL);
+@@ -270,6 +272,8 @@ static int ath79_wdt_probe(struct platform_device *pdev)
+ 		goto err_clk_disable;
+ 	}
+ 
++	dev_info(&pdev->dev, " freq is %ld\n", wdt_freq);
++
+ 	max_timeout = (0xfffffffful / wdt_freq);
+ 	if (timeout < 1 || timeout > max_timeout) {
+ 		timeout = max_timeout;
