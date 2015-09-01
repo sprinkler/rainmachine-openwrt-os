@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=busybox
 PKG_VERSION:=1.19.4
-PKG_RELEASE:=9
+PKG_RELEASE:=10
 PKG_FLAGS:=essential
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
@@ -111,6 +111,13 @@ define Package/busybox/install
 	$(INSTALL_BIN) ./files/sysntpd $(1)/etc/init.d/sysntpd
 	$(INSTALL_BIN) ./files/systohc $(1)/bin/systohc
 	-rm -rf $(1)/lib64
+endef
+
+# recreate the rc.d with correct run level
+define Package/busybox/postinst
+	#!/bin/sh
+	/etc/init.d/sysntpd enable
+	exit 0
 endef
 
 $(eval $(call BuildPackage,busybox))
