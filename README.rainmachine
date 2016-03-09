@@ -1,0 +1,7 @@
+Packages SHAID in current build of RainMachine (use git checkout <shaid> in feeds/<name> to get our used version):
+
+luci: fe14c50067dc6aed27bc5e53e2ebab015849a7845e
+packages: 9e59a24515fca19b963d8ebadbb77037c490e7d0
+routing: 73764a009ffa7daab58d46a6b2df306d602139cb
+telephony: 2d3a640a9b65c70667dd5253e11bf185d40f0f32
+xwrt: 4987  (svn revision)
