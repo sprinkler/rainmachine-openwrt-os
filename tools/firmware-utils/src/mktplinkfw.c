@@ -201,6 +201,13 @@ static struct flash_layout layouts[] = {
 		.rootfs_ofs    = 0x100000,
 	},
 	{
+		.id        = "32Mlzma",
+		.fw_max_len = 0x1f70000,
+		.kernel_la    = 0x80060000,
+		.kernel_ep    = 0x80060000,
+		.rootfs_ofs    = 0x100000,
+	},
+	{
 		/* terminating entry */
 	}
 };
@@ -380,7 +387,7 @@ static struct board_info boards[] = {
                 .id             = "RAINMACHINE",
                 .hw_id          = HWID_RAINMACHINE,
                 .hw_rev         = 1,
-                .layout_id      = "16Mlzma",
+                .layout_id      = "32Mlzma",
         }, {
 		/* terminating entry */
 	}
