@@ -1,10 +1,13 @@
 #!/bin/sh
-echo "Syncing packages..."
-rm -rf /mnt/hall/rainmachine-ar71xx/packages
-cp -a bin/ar71xx/packages /mnt/hall/rainmachine-ar71xx/
-echo "Syncing rc images..."
+echo "Syncing REV2 packages..."
+UPDATE_PATH="/mnt/hall/rainmachine-ar71xx-rev2/"
+rm -rf $UPDATE_PATH/packages/
+cp -a bin/ar71xx/packages $UPDATE_PATH
+
+echo "Syncing REV2 images..."
 rm -rf /mnt/hall/sprinkler2/os/openwrt-ar71xx-generic-rainmachine-jffs2-*
 cp -a bin/ar71xx/openwrt-ar71xx-generic-rainmachine-jffs2-* /mnt/hall/sprinkler2/os/
+
 echo "Adding changelog"
 d=$(date +%Y-%m-%d)
 dt=$(date)
