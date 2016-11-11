@@ -31,9 +31,10 @@ start_service() {
 	if ( $ENABLED && (! has_ssh_pubkey && \
 	     ! has_root_pwd /etc/passwd && ! has_root_pwd /etc/shadow ) || \
 	   ( ! /etc/init.d/dropbear enabled 2> /dev/null && ! /etc/init.d/sshd enabled 2> /dev/null ));
-	#then
+	then
+		echo "telnetd is disabled"
 	#	procd_open_instance
 	#	procd_set_param command "$PROG" -F -l /bin/login.sh
 	#	procd_close_instance
-	#fi
+	fi
 }
