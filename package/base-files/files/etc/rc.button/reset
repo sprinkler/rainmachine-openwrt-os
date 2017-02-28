@@ -19,7 +19,7 @@ then
 	echo 80 > /sys/class/leds/rm-0/brightness
 	sync
 	reboot
-elif [ "$SEEN" -gt 3 ]
+elif [ "$SEEN" -gt 3 -a "$SEEN" -lt 13 ]
 then
 	echo "FACTORY RESET" > /dev/console
 	#Beep
@@ -35,4 +35,17 @@ then
 	#Reboot animation
 	/usr/sbin/rainmachine-led-anim /etc/rainmachine-boot-animation.conf &
 	touch /tmp/factory-reset
+elif [ "$SEEN" -gt 14 ]
+then
+	echo "RESET TO DEFAULTS" > /dev/console
+        #Beep
+        echo 12 > /sys/class/gpio/gpio12/value
+        sleep 1 
+        echo 0 > /sys/class/gpio/gpio12/value
+        echo 12 > /sys/class/gpio/gpio12/value
+        sleep 1
+        echo 0 > /sys/class/gpio/gpio12/value
+        rm -rvf /rainmachine-app/DB/
+	sync
+	reboot
 fi
