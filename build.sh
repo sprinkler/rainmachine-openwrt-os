@@ -1,5 +1,5 @@
 #!/bin/sh
-# Removing existing packages
+echo Removing existing packages
 rm -rf bin/ar71xx
-# Building
+echo Building
 make
