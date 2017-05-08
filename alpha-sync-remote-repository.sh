@@ -12,7 +12,7 @@ f="$UPDATE_PATH/packages/Changelog.txt"
 l_openwrt=$(git  log rainmachine.. --format=-%s)
 l_openwrtfeed=$(git --git-dir ../rainmachine-openwrt-feed/.git log master..next --format=-%s)
 l_rainmachine=$(git --git-dir ../rainmachine/.git log master.. --format=-%s )
-l_rainmachine_webui=$(git --git-dir ../../rainmachine-ui/.git log master..new-layout --format=-%s | grep -v "Merge pull request" )
+l_rainmachine_webui=$(git --git-dir ../../rainmachine-ui/.git log master..next --format=-%s | grep -v "Merge pull request" )
 echo "Build: $dt" > $f
 echo "OpenWRT OS Changes:" >> $f
 echo "$l_openwrt" >> $f
