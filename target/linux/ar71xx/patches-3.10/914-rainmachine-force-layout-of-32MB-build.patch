@@ -1,0 +1,79 @@
+--- a/drivers/mtd/tplinkpart.c
++++ b/drivers/mtd/tplinkpart.c
+@@ -16,7 +16,7 @@
+ #include <linux/mtd/mtd.h>
+ #include <linux/mtd/partitions.h>
+ 
+-#define TPLINK_NUM_PARTS	6
++#define TPLINK_NUM_PARTS	5
+ #define TPLINK_HEADER_V1	0x01000000
+ #define MD5SUM_LEN		16
+ 
+@@ -149,7 +149,7 @@ static int tplink_parse_partitions(struc
+ 	parts[0].name = "u-boot";
+ 	parts[0].offset = 0;
+ 	parts[0].size = offset;
+-/*	parts[0].mask_flags = MTD_WRITEABLE; */ /* Allow writing to uboot partition */
++	//parts[0].mask_flags = MTD_WRITEABLE;
+ 
+ 	parts[1].name = "kernel";
+ 	parts[1].offset = offset;
+@@ -159,55 +159,15 @@ static int tplink_parse_partitions(struc
+ 	parts[2].offset = rootfs_offset;
+ 	parts[2].size = art_offset - rootfs_offset;
+ 
+-#define FACTORY_LAYOUT 1
+-#ifdef FACTORY_LAYOUT_ORIG
+ 	parts[3].name = "firmware";
+ 	parts[3].offset = offset;
+ 	parts[3].size = art_offset - offset;
+ 
+ 	parts[4].name = "art";
+-	parts[4].offset = art_offset;
+-	parts[4].size = TPLINK_ART_LEN;
+-/*	parts[4].mask_flags = MTD_WRITEABLE; */
+-#elif defined(FACTORY_LAYOUT)
+-/*
+-	parts[2].size = 0x800000 - rootfs_offset;
+-
+-	parts[3].name = "rootfs_data";
+-	parts[3].offset = 0x800000;
+-	parts[3].size = art_offset - 0x800000;
+-
+-	parts[4].name = "firmware";
+-	parts[4].offset = offset;
+-	parts[4].size = art_offset - 0x800000;
+-
+-	parts[5].name = "art";
+-	parts[5].offset = art_offset;
+-	parts[5].size = TPLINK_ART_LEN;
+-*/
++        parts[4].offset = art_offset;
++        parts[4].size = TPLINK_ART_LEN;
++//<---->parts[4].mask_flags = MTD_WRITEABLE;
+ 
+-	parts[3].name = "firmware";
+-	parts[3].offset = offset;
+-	parts[3].size = art_offset - offset;
+-
+-	parts[4].name = "dummy";
+-	parts[4].offset = offset;
+-	parts[4].size = 0;
+-
+-	parts[5].name = "art";
+-	parts[5].offset = art_offset;
+-	parts[5].size = TPLINK_ART_LEN;
+-
+-#else
+-	parts[3].name = "art";
+-	parts[3].offset = art_offset;
+-	parts[3].size = TPLINK_ART_LEN;
+-	parts[3].mask_flags = MTD_WRITEABLE;
+-
+-	parts[4].name = "firmware";
+-	parts[4].offset = offset;
+-	parts[4].size = art_offset - offset;
+-#endif
+ 	vfree(header);
+ 
+ 	*pparts = parts;

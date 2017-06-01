@@ -1,0 +1,73 @@
+--- a/drivers/net/wireless/ath/ath9k/ar9003_eeprom.c
++++ b/drivers/net/wireless/ath/ath9k/ar9003_eeprom.c
+@@ -20,6 +20,10 @@
+ #include "ar9003_eeprom.h"
+ #include "ar9003_mci.h"
+ 
++#include <linux/kernel.h>
++#include <linux/mtd/mtd.h>
++#include <linux/err.h>
++
+ #define COMP_HDR_LEN 4
+ #define COMP_CKSUM_LEN 2
+ 
+@@ -3257,6 +3261,46 @@ static int ar9300_eeprom_restore_flash(s
+ 
+ 	return 0;
+ }
++
++static int ar9300_eeprom_restore_mtd(struct ath_hw *ah, u8 *mptr,
++                                    int mdata_size)
++{
++       struct ath_common *common = ath9k_hw_common(ah);
++       int num;
++       struct mtd_info *mtd_info = NULL;
++       size_t written;
++
++       for(num = 0; num < 64; num++) {
++               printk(".");
++               mtd_info = get_mtd_device(NULL, num);
++               if(mtd_info->type == MTD_ABSENT) {
++                       printk(" mtd %d not here\n",num);
++                       put_mtd_device(mtd_info);
++                       continue;
++               }
++
++               if(!strcmp("art", mtd_info->name)) {
++                       printk("Using %s for eeprom data .. \n", mtd_info->name);
++                       break;
++               } else {
++                       put_mtd_device(mtd_info);
++                       mtd_info = NULL;
++               }
++       }
++
++       if(mtd_info == NULL) {
++               ath_err(common, "mtd restore failed");
++               return -EIO;
++       }
++       //all that remains now , is copying to mptr...
++       printk("fetch from mtd %s: %d bytes to %0x%p", mtd_info->name, mdata_size, (u32)mptr);
++
++       mtd_read(mtd_info, 0x1000, mdata_size, &written, mptr);
++       put_mtd_device(mtd_info);
++       return 0;
++}
++
++
+ /*
+  * Read the configuration data from the eeprom.
+  * The data can be put in any specified memory buffer.
+@@ -3283,7 +3327,11 @@ static int ar9300_eeprom_restore_interna
+ 	if (ath9k_hw_use_flash(ah)) {
+ 		u8 txrx;
+ 
+-		ar9300_eeprom_restore_flash(ah, mptr, mdata_size);
++		ath_err(common, "trying mtd restore to 0x%p ..", (u32)mptr);
++		if(ar9300_eeprom_restore_mtd(ah, mptr, mdata_size) < 0) {
++			ath_err(common, "failed to restore from mtd");
++			ar9300_eeprom_restore_flash(ah, mptr, mdata_size);
++		}
+ 
+ 		/* check if eeprom contains valid data */
+ 		eep = (struct ar9300_eeprom *) mptr;
