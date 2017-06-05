@@ -1,6 +1,6 @@
 #!/bin/sh
-echo "Syncing alpha packages..."
-UPDATE_PATH="/mnt/hall/rainmachine-ar71xx-alpha/"
+echo "Syncing REV2 alpha packages..."
+UPDATE_PATH="/mnt/hall/rainmachine-ar71xx-rev2-alpha/"
 
 rm -rf $UPDATE_PATH/packages
 cp -a bin/ar71xx/packages $UPDATE_PATH
