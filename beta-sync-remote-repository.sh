@@ -1,10 +1,14 @@
 #!/bin/sh
-echo "Syncing beta packages..."
-rm -rf /mnt/hall/rainmachine-ar71xx-beta/packages
-cp -a bin/ar71xx/packages /mnt/hall/rainmachine-ar71xx-beta/
-echo "Syncing beta images..."
-rm -rf /mnt/hall/sprinkler2/os/beta-releases/openwrt-ar71xx-generic-rainmachine-jffs2-*
-cp -a bin/ar71xx/openwrt-ar71xx-generic-rainmachine-jffs2-* /mnt/hall/sprinkler2/os/beta-releases/
+echo "Syncing REV2 beta packages..."
+. ./rainmachine-build.conf
+UPDATE_PATH="$UPDATE_LOCATION_ROOT/vm-rainmachine-ar71xx-beta/"
+
+rm -rf $UPDATE_PATH/packages
+cp -a bin/ar71xx/packages $UPDATE_PATH
+
+echo "Syncing REV2 beta images..."
+rm -rf /mnt/hall/sprinkler2/os/beta-releases/openwrt-ar71xx-rev2-rainmachine-jffs2-*
+cp -a bin/ar71xx/openwrt-ar71xx-rev2-rainmachine-jffs2-* /mnt/hall/sprinkler2/os/beta-releases/
 
 echo "Adding beta changelog"
 d=$(date +%Y-%m-%d)
@@ -25,6 +29,6 @@ echo >> $f
 echo "Rainmachine App Changes:" >> $f
 echo "$l_rainmachine" >> $f
 
-echo "Rainmachine Web UI Changes:" >> $f
-echo "$l_rainmachine_webui" >> $f
+#echo "Rainmachine Web UI Changes:" >> $f
+#echo "$l_rainmachine_webui" >> $f
 
