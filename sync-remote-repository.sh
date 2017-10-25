@@ -1,7 +1,7 @@
 #!/bin/sh
 echo "Syncing REV2 packages..."
 . ./rainmachine-build.conf
-UPDATE_PATH="$UPDATE_LOCATION_ROOT/vm-rainmachine-ar71xx/"
+UPDATE_PATH="$UPDATE_LOCATION_ROOT/vm-rainmachine-rev2-ar71xx/"
 
 rm -rf $UPDATE_PATH/packages/
 cp -a bin/ar71xx/packages $UPDATE_PATH
