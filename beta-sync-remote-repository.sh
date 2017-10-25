@@ -1,6 +1,8 @@
 #!/bin/sh
 echo "Syncing REV2 beta packages..."
-UPDATE_PATH="/mnt/hall/rainmachine-ar71xx-rev2-beta/"
+. ./rainmachine-build.conf
+UPDATE_PATH="$UPDATE_LOCATION_ROOT/vm-rainmachine-ar71xx-beta/"
+
 rm -rf $UPDATE_PATH/packages
 cp -a bin/ar71xx/packages $UPDATE_PATH
 
@@ -27,6 +29,6 @@ echo >> $f
 echo "Rainmachine App Changes:" >> $f
 echo "$l_rainmachine" >> $f
 
-echo "Rainmachine Web UI Changes:" >> $f
-echo "$l_rainmachine_webui" >> $f
+#echo "Rainmachine Web UI Changes:" >> $f
+#echo "$l_rainmachine_webui" >> $f
 

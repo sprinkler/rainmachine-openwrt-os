@@ -1,6 +1,8 @@
 #!/bin/sh
 echo "Syncing REV2 packages..."
-UPDATE_PATH="/mnt/hall/rainmachine-ar71xx-rev2/"
+. ./rainmachine-build.conf
+UPDATE_PATH="$UPDATE_LOCATION_ROOT/vm-rainmachine-ar71xx/"
+
 rm -rf $UPDATE_PATH/packages/
 cp -a bin/ar71xx/packages $UPDATE_PATH
 
@@ -23,5 +25,5 @@ echo >> $f
 echo "OpenWRT RainMachine Feed Changes:" >> $f
 echo "$l_openwrtfeed" >> $f
 echo >> $f
-echo "Rainmachine App Changes:" >> $f
-echo "$l_rainmachine" >> $f
+#echo "Rainmachine App Changes:" >> $f
+#echo "$l_rainmachine" >> $f
