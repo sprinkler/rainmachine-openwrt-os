@@ -91,22 +91,20 @@ _sync_remote_repository(){
     if [ "$1" != "release" ]; then
 	UPDATE_PATH=$UPDATE_PATH"-$1"
     fi
-    UPDATE_PATH=$UPDATE_PATH"/"
+    UPDATE_PATH=$UPDATE_PATH
     echo "Syncing $MODEL $1 packages to $UPDATE_PATH"
-    rm -rf $UPDATE_PATH/packages/
-    cp -a bin/ar71xx/packages $UPDATE_PATH
+    aws s3 sync bin/ar71xx/packages $UPDATE_PATH/packages/ --region=eu-central-1 --metadata "timestamp=$(date +%s)" 
 
     echo "Syncing $MODEL  images..."
     if [ -z  $MODEL_SUFFIX ]; then
 	MODEL_SUFFIX="-generic"
     fi
-    rm -rf $UPDATE_LOCATION_ROOT/$UPDATE_LOCATION_BIN/os/openwrt-ar71xx${MODEL_SUFFIX}-rainmachine-jffs2-*
-    cp -a bin/ar71xx/openwrt-ar71xx${MODEL_SUFFIX}-rainmachine-jffs2-* $UPDATE_LOCATION_ROOT/$UPDATE_LOCATION_BIN/os/
+    aws s3 cp bin/ar71xx/ $UPDATE_LOCATION_ROOT/$UPDATE_LOCATION_BIN/os/ --recursive --exclude "*" --include "openwrt-ar71xx${MODEL_SUFFIX}-rainmachine-jffs2-*"  --region=eu-central-1 --metadata "timestamp=$(date +%s)" 
     
     echo "Adding changelog"
     d=$(date +%Y-%m-%d)
     dt=$(date)
-    f="$UPDATE_LOCATION_ROOT/$UPDATE_LOCATION_BIN/os/Changelog-Daily-Build.txt"
+    f="Change-Daily-Build.txt"
     l_openwrt=$(git  log --since="1 day ago" --format=-%s)
     l_openwrtfeed=$(git --git-dir ../rainmachine-openwrt-feed/.git log --since="1 day ago" --format=-%s)
     l_rainmachine=$(git --git-dir ../rainmachine/.git log --since="1 day ago" --format=-%s )
@@ -118,13 +116,15 @@ _sync_remote_repository(){
     echo "OpenWRT RainMachine Feed Changes:" >> $f
     echo "$l_openwrtfeed" >> $f
     echo >> $f
-    #echo "Rainmachine App Changes:" >> $f
-    #echo "$l_rainmachine" >> $f
+    echo "Rainmachine App Changes:" >> $f
+    echo "$l_rainmachine" >> $f
+
+    aws s3 cp $f  $UPDATE_LOCATION_ROOT/$UPDATE_LOCATION_BIN/os/ --region=eu-central-1 --metadata "timestamp=$(date +%s)" 
 }
 
 if [ "$#" -eq 1 ]; then
     echo Building current branch
-    build_current_branch
+    #build_current_branch
     sync_remote_repository $1    
     exit 0
 fi
