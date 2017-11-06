@@ -124,7 +124,7 @@ _sync_remote_repository(){
 
 if [ "$#" -eq 1 ]; then
     echo Building current branch
-    #build_current_branch
+    build_current_branch
     sync_remote_repository $1    
     exit 0
 fi
