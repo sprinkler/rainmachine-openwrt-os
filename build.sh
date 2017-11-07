@@ -109,6 +109,15 @@ _sync_remote_repository(){
     l_openwrtfeed=$(git --git-dir ../rainmachine-openwrt-feed/.git log --since="1 day ago" --format=-%s)
     l_rainmachine=$(git --git-dir ../rainmachine/.git log --since="1 day ago" --format=-%s )
 
+    cd tmp
+    git clone git@github.com:sprinkler/rainmachine-web-ui.git -b next
+    cd rainmachine-web-ui
+    git checkout master
+    l_rainmachine_webui=$(git log master..next --format=-%s | grep -v "Merge pull request" )
+    cd ..
+    rm -rf rainmachine-web-ui
+    cd ..
+
     echo "Build $MODEL2: $dt" > $f
     echo "OpenWRT OS Changes:" >> $f
     echo "$l_openwrt" >> $f
@@ -118,6 +127,9 @@ _sync_remote_repository(){
     echo >> $f
     echo "Rainmachine App Changes:" >> $f
     echo "$l_rainmachine" >> $f
+
+    echo "Rainmachine Web UI Changes:" >> $f
+    echo "$l_rainmachine_webui" >> $f
 
     aws s3 cp $f  $UPDATE_LOCATION_ROOT/$UPDATE_LOCATION_BIN/os/ --region=eu-central-1 --metadata "timestamp=$(date +%s)" 
 }
