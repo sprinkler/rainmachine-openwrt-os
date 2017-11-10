@@ -1,12 +1,22 @@
 #!/bin/bash
 if [ "$#" -lt 1 ]; then
     echo "Use alpha, beta or release"
+    echo "When using alpha, you can set rainmachine-app version and branch by setting shell variables RM_APP_VERSION, RM_APP_BRANCH"
     exit 1
 fi
 if [ "$1" != "alpha" ] && [ "$1" != "beta" ] && [ "$1" != "release" ] ; then
     echo "Use alpha, beta or release"
+    echo "You can set rainmachine-app version and branch by setting shell variables RM_APP_VERSION, RM_APP_BRANCH"
     exit 1
 fi
+if [ "$1" == "beta" ] || [ "$1" == "release" ] ; then
+    unset RM_APP_BRANCH
+    unset RM_APP_VERSION
+    unset RM_APP_RELEASE
+else 
+    export RM_APP_RELEASE=alpha
+fi
+
 
 GIT_DIR="../rainmachine-openwrt-feed/.git/"
 
