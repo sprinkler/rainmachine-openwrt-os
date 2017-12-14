@@ -1,4 +1,5 @@
 #!/bin/bash
+. ./rainmachine-build.conf
 if [ "$#" -lt 1 ]; then
     echo "Use alpha, beta or release"
     echo "When using alpha, you can set rainmachine-app version and branch by setting shell variables RM_APP_VERSION, RM_APP_BRANCH"
@@ -107,11 +108,11 @@ _sync_remote_repository(){
     echo "Syncing $MODEL $1 packages to $UPDATE_PATH"
     aws s3 sync bin/ar71xx/packages $UPDATE_PATH/packages/ --region=eu-central-1 --metadata "timestamp=$(date +%s)" 
 
-    echo "Syncing $MODEL  images..."
+    echo "Copying  $MODEL  images to local server"
     if [ -z  $MODEL_SUFFIX ]; then
 	MODEL_SUFFIX="-generic"
     fi
-    aws s3 cp bin/ar71xx/ $UPDATE_LOCATION_ROOT/$UPDATE_LOCATION_BIN/os/ --recursive --exclude "*" --include "openwrt-ar71xx${MODEL_SUFFIX}-rainmachine-jffs2-*"  --region=eu-central-1 --metadata "timestamp=$(date +%s)" 
+    cp bin/ar71xx/openwrt-ar71xx${MODEL_SUFFIX}-rainmachine-jffs2-* $UPDATE_LOCATION_PRIVATE/$UPDATE_LOCATION_BIN/os/
     
     echo "Adding changelog"
     d=$(date +%Y-%m-%d)
@@ -143,7 +144,7 @@ _sync_remote_repository(){
     echo "Rainmachine Web UI Changes:" >> $f
     echo "$l_rainmachine_webui" >> $f
 
-    aws s3 cp $f  $UPDATE_LOCATION_ROOT/$UPDATE_LOCATION_BIN/os/ --region=eu-central-1 --metadata "timestamp=$(date +%s)" 
+    cp $f  $UPDATE_LOCATION_PRIVATE/$UPDATE_LOCATION_BIN/os/ 
 }
 
 if [ "$#" -eq 1 ]; then
