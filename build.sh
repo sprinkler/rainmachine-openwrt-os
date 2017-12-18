@@ -84,12 +84,9 @@ build_all_branches(){
 sync_remote_repository(){
     case $1 in
 	"release")
-	_sync_remote_repository "release"
-	_sync_remote_repository "beta"
 	_sync_remote_repository "alpha"
 	;;
 	"beta")
-	_sync_remote_repository "beta"
 	_sync_remote_repository "alpha"
 	;;
 	"alpha")
@@ -101,12 +98,16 @@ sync_remote_repository(){
 _sync_remote_repository(){
     . ./rainmachine-build.conf
     UPDATE_PATH=$UPDATE_LOCATION_ROOT/${UPDATE_LOCATION_PREFIX}rainmachine-ar71xx${MODEL_SUFFIX}
-    if [ "$1" != "release" ]; then
-	UPDATE_PATH=$UPDATE_PATH"-$1"
+    UPDATE_PATH_PRIVATE=$UPDATE_LOCATION_PRIVATE/${UPDATE_LOCATION_PREFIX}rainmachine-ar71xx${MODEL_SUFFIX}
+    UPDATE_PATH=$UPDATE_PATH-alpha #force upload path to alpha
+    UPDATE_PATH_PRIVATE=$UPDATE_PATH_PRIVATE-alpha #force upload path to alpha
+        
+    if [ $AWS_SYNC -eq 1 ]; then
+        echo "Syncing $MODEL $1 packages to $UPDATE_PATH"
+        aws s3 sync bin/ar71xx/packages $UPDATE_PATH/packages/ --region=us-west-2 --metadata "timestamp=$(date +%s)" 
     fi
-    UPDATE_PATH=$UPDATE_PATH
-    echo "Syncing $MODEL $1 packages to $UPDATE_PATH"
-    aws s3 sync bin/ar71xx/packages $UPDATE_PATH/packages/ --region=eu-central-1 --metadata "timestamp=$(date +%s)" 
+    echo "Copying $MODEL $1 packages to UPDATE_PATH_PRIVATE"
+    cp bin/ar71xx/packages/*  $UPDATE_PATH_PRIVATE/packages/
 
     echo "Copying  $MODEL  images to local server"
     if [ -z  $MODEL_SUFFIX ]; then
@@ -149,7 +150,7 @@ _sync_remote_repository(){
 
 if [ "$#" -eq 1 ]; then
     echo Building current branch
-    build_current_branch
+#    build_current_branch
     sync_remote_repository $1    
     exit 0
 fi
