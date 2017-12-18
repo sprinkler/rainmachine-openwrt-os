@@ -104,7 +104,8 @@ _sync_remote_repository(){
         
     if [ $AWS_SYNC -eq 1 ]; then
         echo "Syncing $MODEL $1 packages to $UPDATE_PATH"
-        aws s3 sync bin/ar71xx/packages $UPDATE_PATH/packages/ --region=us-west-2 --metadata "timestamp=$(date +%s)" 
+	TIMESTAMP_S3="$(date +%s)"
+        aws s3 sync bin/ar71xx/packages $UPDATE_PATH/packages/ --region=us-west-2 --metadata "timestamp=$TIMESTAMP_S3" 
     fi
     echo "Copying $MODEL $1 packages to UPDATE_PATH_PRIVATE"
     cp bin/ar71xx/packages/*  $UPDATE_PATH_PRIVATE/packages/
@@ -150,7 +151,7 @@ _sync_remote_repository(){
 
 if [ "$#" -eq 1 ]; then
     echo Building current branch
-#    build_current_branch
+    build_current_branch
     sync_remote_repository $1    
     exit 0
 fi
