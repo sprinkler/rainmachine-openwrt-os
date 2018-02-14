@@ -1,27 +1,7 @@
 #!/bin/bash
 . ./rainmachine-build.conf
-if [ "$#" -lt 1 ]; then
-    echo "Use alpha, beta or release"
-    echo "When using alpha, you can set rainmachine-app version and branch by setting shell variables RM_APP_VERSION, RM_APP_BRANCH"
-    echo "For aplha version you can export RM_APP_DEBUG to install the \"py\" instead of \"pyc\""
-    exit 1
-fi
-if [ "$1" != "alpha" ] && [ "$1" != "beta" ] && [ "$1" != "release" ] ; then
-    echo "Use alpha, beta or release"
-    echo "You can set rainmachine-app version and branch by setting shell variables RM_APP_VERSION, RM_APP_BRANCH"
-    exit 1
-fi
-if [ "$1" == "beta" ] || [ "$1" == "release" ] ; then
-    unset RM_APP_BRANCH
-    unset RM_APP_VERSION
-    unset RM_APP_RELEASE
-    unset RM_APP_DEBUG
-else 
-    export RM_APP_RELEASE=alpha
-fi
 
-
-GIT_DIR="../rainmachine-openwrt-feed/.git/"
+BRANCHES="rainmachine next|rainmachine-rev2 next-rev2-fix"
 
 check_branch() {
     CURRENT_FEED_BRANCH=`git --git-dir=$GIT_DIR symbolic-ref -q --short HEAD`
@@ -42,7 +22,6 @@ check_branch() {
 }
 
 
-BRANCHES="rainmachine next|rainmachine-rev2 next-rev2-fix"
 
 build_current_branch(){
     CURRENT_BUILD_BRANCH=`git symbolic-ref -q --short HEAD`
@@ -77,7 +56,7 @@ build_all_branches(){
         make target/linux/clean
         echo Building
         make -j4
-	sync_remote_repository $1
+	sync_remote_repository alpha
     done	    
 }
 
@@ -149,16 +128,21 @@ _sync_remote_repository(){
     cp $f  $UPDATE_LOCATION_PRIVATE/$UPDATE_LOCATION_BIN/os/ 
 }
 
-if [ "$#" -eq 1 ]; then
-    echo Building current branch
+# This should copy and overwrite original packages in openwrt feed with our versions
+overwrite_openwrt_feed_packages() {
+    cp -a $RAINMACHINE_FEED_DIR/lighttpd feeds/packages/net/ 
+}
+
+if [ "$#" -lt 1 ]; then
+    echo **Building current branch
     build_current_branch
-    sync_remote_repository $1    
+    sync_remote_repository alpha
     exit 0
 fi
 
-if [ $2 == "all" ]; then
-    echo Build all branches
-    build_all_branches $1
+if [ $1 == "all" ]; then
+    echo **Building all branches
+    build_all_branches alpha
     exit 0
 fi
 
