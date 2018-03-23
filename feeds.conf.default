@@ -1,4 +1,5 @@
-src-git packages git://git.openwrt.org/packages.git^9e59a24515fca19b963d8ebadbb77037c490e7d0
+#src-git packages git://git.openwrt.org/packages.git^9e59a24515fca19b963d8ebadbb77037c490e7d0
+src-git packages git@github.com:sprinkler/rainmachine-openwrt-packages.git
 #src-git luci https://git.openwrt.org/project/luci.git^fe14c50067dc6aed27bc5e53e2ebab015849a7845e
 src-git routing git://github.com/openwrt-routing/packages.git^73764a009ffa7daab58d46a6b2df306d602139cb
 #src-git telephony http://feeds.openwrt.org/feed/telephony.git^2d3a640a9b65c70667dd5253e11bf185d40f0f32
