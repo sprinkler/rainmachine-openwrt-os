@@ -21,16 +21,6 @@ check_branch() {
     fi
 }
 
-
-clean_up(){
-    if [ -z "$RM_APP_VERSION" ]; then 
-	echo "Cleaning up after custom version"
-	rm dl/rainmachine-app-${RM_APP_VERSION}.*
-    else 
-	echo "Nothing to clean up"
-    fi
-}
-
 build_current_branch(){
     CURRENT_BUILD_BRANCH=`git symbolic-ref -q --short HEAD`
     IFS="|"
@@ -48,7 +38,6 @@ build_current_branch(){
 	    make -j4
 	fi
     done
-    clean_up
 }
 
 build_all_branches(){
@@ -67,7 +56,6 @@ build_all_branches(){
         make -j4
 	sync_remote_repository alpha
     done
-    clean_up	    
 }
 
 sync_remote_repository(){
