@@ -85,7 +85,7 @@ _sync_remote_repository(){
         aws s3 sync bin/ar71xx/packages $UPDATE_PATH/packages/ --region=us-west-2 --metadata "timestamp=$TIMESTAMP_S3" 
     fi
 
-    if [ $LOCAL_SYNC -eq 1]; then
+    if [ $LOCAL_SYNC -eq 1 ]; then
 	echo "Copying $MODEL $1 packages to UPDATE_PATH_PRIVATE"
 	cp bin/ar71xx/packages/*  $UPDATE_PATH_PRIVATE/packages/
 
