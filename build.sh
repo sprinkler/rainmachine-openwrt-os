@@ -84,14 +84,18 @@ _sync_remote_repository(){
 	TIMESTAMP_S3="$(date +%s)"
         aws s3 sync bin/ar71xx/packages $UPDATE_PATH/packages/ --region=us-west-2 --metadata "timestamp=$TIMESTAMP_S3" 
     fi
-    echo "Copying $MODEL $1 packages to UPDATE_PATH_PRIVATE"
-    cp bin/ar71xx/packages/*  $UPDATE_PATH_PRIVATE/packages/
 
-    echo "Copying  $MODEL  images to local server"
-    if [ -z  $MODEL_SUFFIX ]; then
-	MODEL_SUFFIX="-generic"
+    if [ $LOCAL_SYNC -eq 1]; then
+	echo "Copying $MODEL $1 packages to UPDATE_PATH_PRIVATE"
+	cp bin/ar71xx/packages/*  $UPDATE_PATH_PRIVATE/packages/
+
+        echo "Copying  $MODEL  images to local server"
+	if [ -z  $MODEL_SUFFIX ]; then
+	    MODEL_SUFFIX="-generic"
+	fi
+	cp bin/ar71xx/openwrt-ar71xx${MODEL_SUFFIX}-rainmachine-jffs2-* $UPDATE_LOCATION_PRIVATE/$UPDATE_LOCATION_BIN/os/
+	cp $f  $UPDATE_LOCATION_PRIVATE/$UPDATE_LOCATION_BIN/os/ 
     fi
-    cp bin/ar71xx/openwrt-ar71xx${MODEL_SUFFIX}-rainmachine-jffs2-* $UPDATE_LOCATION_PRIVATE/$UPDATE_LOCATION_BIN/os/
     
     echo "Adding changelog"
     d=$(date +%Y-%m-%d)
@@ -122,8 +126,6 @@ _sync_remote_repository(){
 
     echo "Rainmachine Web UI Changes:" >> $f
     echo "$l_rainmachine_webui" >> $f
-
-    cp $f  $UPDATE_LOCATION_PRIVATE/$UPDATE_LOCATION_BIN/os/ 
 }
 
 # This should copy and overwrite original packages in openwrt feed with our versions
